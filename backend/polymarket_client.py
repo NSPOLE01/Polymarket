@@ -11,7 +11,7 @@ HEADERS = {"User-Agent": "polymarket-consensus-bot/1.0"}
 async def get_top_earners(client: httpx.AsyncClient, limit: int = 20) -> list[dict]:
     resp = await client.get(
         f"{DATA_API}/v1/leaderboard",
-        params={"timePeriod": "ALL", "orderBy": "PNL", "limit": limit},
+        params={"timePeriod": "MONTH", "orderBy": "PNL", "limit": limit},
         headers=HEADERS,
     )
     resp.raise_for_status()
