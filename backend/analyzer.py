@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -40,6 +41,8 @@ def find_consensus_bets(
     """
     agreement: dict[tuple[str, str], list[tuple[str, dict]]] = defaultdict(list)
 
+    now = datetime.now(timezone.utc)
+
     for user_addr, positions in positions_by_user.items():
         seen: dict[tuple[str, str], dict] = {}
         for pos in positions:
@@ -47,6 +50,18 @@ def find_consensus_bets(
             outcome = pos.get("outcome", "")
             if not cid or not outcome:
                 continue
+
+            # Skip markets that have already closed
+            end_date_str = pos.get("endDate", "")
+            if end_date_str:
+                try:
+                    end_date = datetime.fromisoformat(end_date_str.replace("Z", "+00:00"))
+                    if end_date.tzinfo is None:
+                        end_date = end_date.replace(tzinfo=timezone.utc)
+                    if end_date <= now:
+                        continue
+                except ValueError:
+                    pass
             key = (cid, outcome)
             if key not in seen or pos.get("size", 0) > seen[key].get("size", 0):
                 seen[key] = pos
