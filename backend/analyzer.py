@@ -6,13 +6,11 @@ from dataclasses import dataclass, field
 class UserPosition:
     address: str
     user_name: str
-    x_username: str
     profile_image: str
     size: float
     avg_price: float
     current_value: float
     cash_pnl: float
-    start_date: str  # when the position was first opened
 
 
 @dataclass
@@ -83,7 +81,6 @@ def find_consensus_bets(
                 UserPosition(
                     address=addr,
                     user_name=user_info.get(addr, {}).get("userName") or addr[:10] + "…",
-                    x_username=user_info.get(addr, {}).get("xUsername") or "",
                     profile_image=user_info.get(addr, {}).get("profileImage") or "",
                     size=round(pos.get("size", 0), 2),
                     avg_price=round(pos.get("avgPrice", 0), 4),

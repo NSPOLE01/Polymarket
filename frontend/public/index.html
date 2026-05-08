@@ -732,8 +732,7 @@
 
     .modal-table th:nth-child(3),
     .modal-table th:nth-child(4),
-    .modal-table th:nth-child(5),
-    .modal-table th:nth-child(6) { text-align: right; }
+    .modal-table th:nth-child(5) { text-align: right; }
 
     .modal-table td {
       padding: 12px 20px;
@@ -748,8 +747,7 @@
 
     .modal-table td:nth-child(3),
     .modal-table td:nth-child(4),
-    .modal-table td:nth-child(5),
-    .modal-table td:nth-child(6) { text-align: right; }
+    .modal-table td:nth-child(5) { text-align: right; }
 
     .card { cursor: pointer; }
 
@@ -889,8 +887,6 @@
             <thead>
               <tr>
                 <th>Trader</th>
-                <th>X</th>
-                <th>Placed</th>
                 <th>Size</th>
                 <th>Avg Entry</th>
                 <th>PnL</th>
@@ -1006,8 +1002,6 @@
               </a>
             </div>
           </td>
-          <td>${u.x_username ? `<span class="lb-x">@${sanitize(u.x_username)}</span>` : '<span style="color:var(--text-3)">—</span>'}</td>
-          <td>${sanitize(fmtDate(u.start_date))}</td>
           <td>${sanitize(fmtSize(u.size))}</td>
           <td>${sanitize(fmtPrice(u.avg_price))}</td>
           <td class="${pnlCls}">${sanitize(fmt$$(u.cash_pnl))}</td>

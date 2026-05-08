@@ -37,6 +37,7 @@ async def get_open_positions(client: httpx.AsyncClient, address: str) -> list[di
         return resp.json() or []
 
 
+
 async def fetch_all_positions(addresses: list[str]) -> dict[str, list[dict]]:
     t0 = time.perf_counter()
     logger.info("Fetching positions for %d accounts (semaphore=10)…", len(addresses))

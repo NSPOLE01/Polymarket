@@ -82,6 +82,7 @@ async def consensus(top_earners: int = 50, top_bets: int = 5, force: bool = Fals
             i, bet.agreeing_count, bet.outcome, bet.title[:60],
         )
 
+
     total_elapsed = time.perf_counter() - request_start
     logger.info("=== Request complete in %.2fs ===", total_elapsed)
 
