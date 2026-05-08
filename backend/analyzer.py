@@ -86,7 +86,6 @@ def find_consensus_bets(
                     avg_price=round(pos.get("avgPrice", 0), 4),
                     current_value=round(pos.get("currentValue", 0), 2),
                     cash_pnl=round(pos.get("cashPnl", 0), 2),
-                    start_date=pos.get("startDate") or pos.get("createdAt") or "",
                 )
                 for addr, pos in user_positions
             ],
