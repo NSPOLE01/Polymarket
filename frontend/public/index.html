@@ -623,6 +623,134 @@
 
     .empty-state.visible { display: block; }
 
+    /* ─────────── MODAL ─────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000000cc;
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 680px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(12px) scale(0.98);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+
+    .modal-overlay.open .modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 24px 24px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .modal-header-left { display: flex; flex-direction: column; gap: 8px; }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: var(--text-1);
+    }
+
+    .modal-close {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .modal-close:hover { background: var(--border); color: var(--text-1); }
+    .modal-close svg { width: 14px; height: 14px; }
+
+    .modal-body {
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-body::-webkit-scrollbar { width: 6px; }
+    .modal-body::-webkit-scrollbar-track { background: transparent; }
+    .modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .modal-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+    }
+
+    .modal-table thead tr {
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg-card);
+      z-index: 1;
+    }
+
+    .modal-table th {
+      padding: 10px 20px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-align: left;
+    }
+
+    .modal-table th:nth-child(3),
+    .modal-table th:nth-child(4),
+    .modal-table th:nth-child(5) { text-align: right; }
+
+    .modal-table td {
+      padding: 12px 20px;
+      font-size: 13px;
+      color: var(--text-2);
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .modal-table tr:last-child td { border-bottom: none; }
+    .modal-table tr:hover td { background: #ffffff04; }
+
+    .modal-table td:nth-child(3),
+    .modal-table td:nth-child(4),
+    .modal-table td:nth-child(5) { text-align: right; }
+
+    .card { cursor: pointer; }
+
     /* ─────────── RESPONSIVE ─────────── */
     @media (max-width: 600px) {
       header { flex-direction: column; gap: 20px; }
@@ -740,6 +868,37 @@
     <!-- Cards container -->
     <div class="cards-grid" id="cards-grid" style="display:none"></div>
 
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+      <div class="modal" id="modal">
+        <div class="modal-header">
+          <div class="modal-header-left">
+            <div id="modal-badge"></div>
+            <div class="modal-title" id="modal-title"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <table class="modal-table">
+            <thead>
+              <tr>
+                <th>Trader</th>
+                <th>X</th>
+                <th>Size</th>
+                <th>Avg Entry</th>
+                <th>PnL</th>
+              </tr>
+            </thead>
+            <tbody id="modal-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- LEADERBOARD SECTION -->
     <div class="lb-section">
       <div class="lb-toggle" id="lb-toggle" onclick="toggleLeaderboard()">
@@ -811,6 +970,60 @@
       return el.innerHTML;
     }
 
+    function openModal(bet, totalEarners) {
+      const outcome = (bet.outcome || '').toUpperCase();
+      const isYes   = outcome === 'YES' || outcome.trim() === 'YES';
+      const cls     = isYes ? 'yes' : 'no';
+
+      document.getElementById('modal-title').textContent = bet.title || bet.condition_id;
+      document.getElementById('modal-badge').innerHTML =
+        `<span class="outcome-badge ${cls}">${sanitize(bet.outcome)}</span>`;
+
+      const tbody = document.getElementById('modal-tbody');
+      tbody.innerHTML = '';
+
+      (bet.agreeing_users || []).forEach(u => {
+        const name    = u.user_name || u.address?.slice(0, 10) + '…';
+        const wallet  = u.address || '';
+        const avatar  = u.profile_image || '';
+        const initial = (name[0] || '?').toUpperCase();
+        const pnlCls  = u.cash_pnl > 0 ? 'pnl-positive' : u.cash_pnl < 0 ? 'pnl-negative' : '';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div class="lb-user">
+              <div class="lb-avatar">
+                ${avatar
+                  ? `<img src="${sanitize(avatar)}" alt="" onerror="this.style.display='none'">`
+                  : sanitize(initial)}
+              </div>
+              <a class="lb-name" href="https://polymarket.com/profile/${sanitize(wallet)}" target="_blank" rel="noopener">
+                ${sanitize(name)}
+              </a>
+            </div>
+          </td>
+          <td>${u.x_username ? `<span class="lb-x">@${sanitize(u.x_username)}</span>` : '<span style="color:var(--text-3)">—</span>'}</td>
+          <td>${sanitize(fmtSize(u.size))}</td>
+          <td>${sanitize(fmtPrice(u.avg_price))}</td>
+          <td class="${pnlCls}">${sanitize(fmt$$(u.cash_pnl))}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('modal-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('modal-overlay')) closeModal();
+    }
+
     function renderCards(bets, totalEarners) {
       const grid = document.getElementById('cards-grid');
       grid.innerHTML = '';
@@ -852,7 +1065,7 @@
             </div>
           </div>
           ${bet.market_url
-            ? `<a class="card-link" href="${sanitize(bet.market_url)}" target="_blank" rel="noopener">
+            ? `<a class="card-link" href="${sanitize(bet.market_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
                 View on Polymarket
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M7 7h10v10M7 17L17 7"/>
@@ -860,6 +1073,7 @@
                </a>`
             : ''}
         `;
+        card.addEventListener('click', () => openModal(bet, totalEarners));
         grid.appendChild(card);
       });
     }
@@ -958,6 +1172,8 @@
         btn.classList.remove('spinning');
       }
     }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
     // Auto-load on page open
     loadData();
