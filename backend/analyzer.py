@@ -86,9 +86,10 @@ def find_consensus_bets(
         total_size = sum(p.get("size", 0) for p in positions_list)
         title = positions_list[0].get("title", "") or detail.get("question", cid)
         slug = positions_list[0].get("slug", "") or detail.get("slug", "")
+        event_slug = positions_list[0].get("eventSlug", "") or slug
         end_date = positions_list[0].get("endDate", "") or detail.get("endDate", "")
         icon = positions_list[0].get("icon", "") or detail.get("icon", "")
-        market_url = f"https://polymarket.com/event/{slug}" if slug else ""
+        market_url = f"https://polymarket.com/event/{event_slug}" if event_slug else ""
 
         # Build enriched per-user list, sorted by position size descending
         agreeing_users = sorted(
