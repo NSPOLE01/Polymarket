@@ -18,7 +18,7 @@ app.add_middleware(
 
 
 @app.get("/api/consensus")
-async def consensus(top_earners: int = 20, top_bets: int = 5):
+async def consensus(top_earners: int = 50, top_bets: int = 5):
     """
     1. Fetch the top `top_earners` accounts by all-time PnL.
     2. Fetch their open (unsettled) positions.
