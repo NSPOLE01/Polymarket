@@ -986,7 +986,7 @@
 
     function applyFilter() {
       const now = new Date();
-      const filtered = activeDays
+      const pool = activeDays
         ? allBets.filter(bet => {
             if (!bet.end_date) return true;
             const end = new Date(bet.end_date);
@@ -995,20 +995,22 @@
           })
         : allBets;
 
+      const top5 = pool.slice(0, 5);
+
       const cardsGrid = document.getElementById('cards-grid');
       const emptyState = document.getElementById('empty-state');
-      document.getElementById('bet-count-badge').textContent = `Top ${filtered.length}`;
+      document.getElementById('bet-count-badge').textContent = `Top ${top5.length}`;
 
-      if (filtered.length === 0) {
+      if (top5.length === 0) {
         cardsGrid.style.display = 'none';
         emptyState.classList.add('visible');
         emptyState.textContent = activeDays
-          ? `No consensus bets closing within ${activeDays} day${activeDays === 1 ? '' : 's'}.`
+          ? `No consensus bets closing within ${activeDays === 7 ? '1 week' : activeDays === 30 ? '1 month' : '1 year'}.`
           : 'No consensus bets found.';
       } else {
         emptyState.classList.remove('visible');
         cardsGrid.style.display = 'grid';
-        renderCards(filtered, totalEarnersCount);
+        renderCards(top5, totalEarnersCount);
       }
     }
 
