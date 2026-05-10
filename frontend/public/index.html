@@ -751,6 +751,44 @@
 
     .card { cursor: pointer; }
 
+    /* ─────────── FILTER TOGGLES ─────────── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right: 4px;
+    }
+
+    .filter-btn {
+      padding: 5px 14px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-2);
+      font-family: var(--mono);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover { border-color: var(--accent); color: var(--text-1); }
+
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
     /* ─────────── RESPONSIVE ─────────── */
     @media (max-width: 600px) {
       header { flex-direction: column; gap: 20px; }
@@ -796,6 +834,15 @@
       <span class="section-label">Consensus Signals</span>
       <div class="section-line"></div>
       <span class="section-badge" id="bet-count-badge">Top 5</span>
+    </div>
+
+    <!-- Closing date filter -->
+    <div class="filter-bar">
+      <span class="filter-label">Closes in</span>
+      <button class="filter-btn active" data-days="" onclick="setFilter(this)">All</button>
+      <button class="filter-btn" data-days="7"  onclick="setFilter(this)">1 Week</button>
+      <button class="filter-btn" data-days="30" onclick="setFilter(this)">1 Month</button>
+      <button class="filter-btn" data-days="365" onclick="setFilter(this)">1 Year</button>
     </div>
 
     <!-- Error -->
@@ -926,6 +973,44 @@
 
   <script>
     let lbOpen = false;
+    let allBets = [];
+    let totalEarnersCount = 0;
+    let activeDays = null;  // null = no filter
+
+    function setFilter(btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeDays = btn.dataset.days ? parseInt(btn.dataset.days) : null;
+      applyFilter();
+    }
+
+    function applyFilter() {
+      const now = new Date();
+      const filtered = activeDays
+        ? allBets.filter(bet => {
+            if (!bet.end_date) return true;
+            const end = new Date(bet.end_date);
+            const diffDays = (end - now) / (1000 * 60 * 60 * 24);
+            return diffDays >= 0 && diffDays <= activeDays;
+          })
+        : allBets;
+
+      const cardsGrid = document.getElementById('cards-grid');
+      const emptyState = document.getElementById('empty-state');
+      document.getElementById('bet-count-badge').textContent = `Top ${filtered.length}`;
+
+      if (filtered.length === 0) {
+        cardsGrid.style.display = 'none';
+        emptyState.classList.add('visible');
+        emptyState.textContent = activeDays
+          ? `No consensus bets closing within ${activeDays} day${activeDays === 1 ? '' : 's'}.`
+          : 'No consensus bets found.';
+      } else {
+        emptyState.classList.remove('visible');
+        cardsGrid.style.display = 'grid';
+        renderCards(filtered, totalEarnersCount);
+      }
+    }
 
     function toggleLeaderboard() {
       lbOpen = !lbOpen;
@@ -1143,16 +1228,11 @@
 
         const bets = data.consensus_bets || [];
         const lb   = data.leaderboard    || [];
-        const total = data.top_earners_analyzed || lb.length || 20;
+        const total = data.top_earners_analyzed || lb.length || 50;
 
-        document.getElementById('bet-count-badge').textContent = `Top ${bets.length}`;
-
-        if (bets.length === 0) {
-          emptyState.classList.add('visible');
-        } else {
-          cardsGrid.style.display = 'grid';
-          renderCards(bets, total);
-        }
+        allBets = bets;
+        totalEarnersCount = total;
+        applyFilter();
 
         renderLeaderboard(lb);
 
