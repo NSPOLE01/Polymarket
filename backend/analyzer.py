@@ -51,7 +51,7 @@ def find_consensus_bets(
             if not cid or not outcome:
                 continue
 
-            # Skip markets that have already closed
+            # Skip markets whose end date has passed
             end_date_str = pos.get("endDate", "")
             if end_date_str:
                 try:
@@ -62,6 +62,12 @@ def find_consensus_bets(
                         continue
                 except ValueError:
                     pass
+
+            # Skip markets that have effectively resolved — current price near 0
+            # means the outcome has already been determined against this position
+            # (e.g. a team eliminated from a tournament)
+            if pos.get("curPrice", 1) < 0.02:
+                continue
             key = (cid, outcome)
             if key not in seen or pos.get("size", 0) > seen[key].get("size", 0):
                 seen[key] = pos
