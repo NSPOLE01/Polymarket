@@ -22,6 +22,7 @@ class ConsensusMarket:
     agreeing_users: list[UserPosition]
     agreeing_count: int
     avg_price: float
+    cur_price: float
     total_size: float
     market_url: str
     slug: str
@@ -89,6 +90,7 @@ def find_consensus_bets(
             sum(p.get("avgPrice", 0) for p in positions_list) / len(positions_list)
             if positions_list else 0.0
         )
+        cur_price = positions_list[0].get("curPrice", 0.0) if positions_list else 0.0
         total_size = sum(p.get("size", 0) for p in positions_list)
         title = positions_list[0].get("title", "") or detail.get("question", cid)
         slug = positions_list[0].get("slug", "") or detail.get("slug", "")
@@ -123,6 +125,7 @@ def find_consensus_bets(
                 agreeing_users=agreeing_users,
                 agreeing_count=len(agreeing_users),
                 avg_price=round(avg_price, 4),
+                cur_price=round(cur_price, 4),
                 total_size=round(total_size, 2),
                 market_url=market_url,
                 slug=slug,

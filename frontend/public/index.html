@@ -1121,6 +1121,14 @@
         const cls     = isYes ? 'yes' : 'no';
         const pct     = Math.round((bet.agreeing_count / (totalEarners || 20)) * 100);
 
+        const mov = bet.cur_price && bet.avg_price
+          ? ((bet.cur_price - bet.avg_price) / bet.avg_price * 100)
+          : 0;
+        const movPct    = Math.abs(mov).toFixed(1);
+        const movSign   = mov > 0 ? '+' : mov < 0 ? '-' : '';
+        const movColor  = mov > 0 ? 'var(--yes)' : mov < 0 ? 'var(--no)' : 'var(--text-3)';
+        const curPriceColor = mov > 0 ? 'var(--yes)' : mov < 0 ? 'var(--no)' : 'var(--text-1)';
+
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
@@ -1143,8 +1151,12 @@
           </div>
           <div class="card-stats">
             <div class="stat">
+              <span class="stat-label">Current Price</span>
+              <span class="stat-value" style="color:${curPriceColor}">${sanitize(fmtPrice(bet.cur_price))}</span>
+            </div>
+            <div class="stat">
               <span class="stat-label">Avg Entry</span>
-              <span class="stat-value">${sanitize(fmtPrice(bet.avg_price))}</span>
+              <span class="stat-value">${sanitize(fmtPrice(bet.avg_price))} <span style="font-size:11px;color:${movColor}">${movSign}${sanitize(movPct)}%</span></span>
             </div>
             <div class="stat">
               <span class="stat-label">Total Size</span>
