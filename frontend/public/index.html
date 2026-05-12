@@ -840,8 +840,9 @@
     <div class="filter-bar">
       <span class="filter-label">Closes in</span>
       <button class="filter-btn active" data-days="" onclick="setFilter(this)">All</button>
-      <button class="filter-btn" data-days="7"  onclick="setFilter(this)">1 Week</button>
-      <button class="filter-btn" data-days="30" onclick="setFilter(this)">1 Month</button>
+      <button class="filter-btn" data-days="1"   onclick="setFilter(this)">Today</button>
+      <button class="filter-btn" data-days="7"   onclick="setFilter(this)">1 Week</button>
+      <button class="filter-btn" data-days="30"  onclick="setFilter(this)">1 Month</button>
       <button class="filter-btn" data-days="365" onclick="setFilter(this)">1 Year</button>
     </div>
 
@@ -1004,8 +1005,9 @@
       if (top5.length === 0) {
         cardsGrid.style.display = 'none';
         emptyState.classList.add('visible');
+        const label = { 1: 'today', 7: '1 week', 30: '1 month', 365: '1 year' }[activeDays] || `${activeDays} days`;
         emptyState.textContent = activeDays
-          ? `No consensus bets closing within ${activeDays === 7 ? '1 week' : activeDays === 30 ? '1 month' : '1 year'}.`
+          ? `No consensus bets closing ${activeDays === 1 ? 'today' : `within ${label}`}.`
           : 'No consensus bets found.';
       } else {
         emptyState.classList.remove('visible');
