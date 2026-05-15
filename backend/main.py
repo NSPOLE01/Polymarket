@@ -109,6 +109,11 @@ async def consensus(top_earners: int = 50, top_bets: int = 20, force: bool = Fal
     return result
 
 
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
+
 @app.get("/health")
 async def health():
     age = time.time() - _CACHE_AT
