@@ -26,7 +26,7 @@ app = FastAPI(title="Polymarket Consensus Bot")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # tighten to your Vercel URL after deploying
     allow_methods=["GET"],
     allow_headers=["*"],
 )

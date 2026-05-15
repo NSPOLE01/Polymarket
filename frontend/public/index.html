@@ -973,6 +973,8 @@
   </div>
 
   <script>
+    const API_BASE = 'https://polymarket-00ty.onrender.com';
+
     let lbOpen = false;
     let allBets = [];
     let totalEarnersCount = 0;
@@ -1236,7 +1238,7 @@
       emptyState.classList.remove('visible');
 
       try {
-        const resp = await fetch('/api/consensus');
+        const resp = await fetch(`${API_BASE}/api/consensus`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
         const data = await resp.json();
 
